@@ -8,11 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi"
-	chim "github.com/go-chi/chi/middleware"
-	"github.com/go-redis/redis/v8"
-	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/log/logrusadapter"
 	"ucrm/app"
 	authUC "ucrm/app/auth/usecase"
 	cardApi "ucrm/app/card/api"
@@ -26,13 +21,19 @@ import (
 	pipelineRepo "ucrm/app/pipeline/repository"
 	"ucrm/app/swagger"
 
+	"github.com/go-chi/chi"
+	chim "github.com/go-chi/chi/middleware"
+	"github.com/go-redis/redis/v8"
+	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/log/logrusadapter"
+
 	dashboardSettingsRepo "ucrm/app/dashboard-settings/repository"
 	userApi "ucrm/app/user/api"
 	userRepo "ucrm/app/user/repository"
 
-	blogger "github.com/sirupsen/logrus"
 	conf "ucrm/app/config"
 	_ "ucrm/docs"
+	"ucrm/pkg/logger"
 	"ucrm/pkg/pg"
 	redisCache "ucrm/pkg/redis-cache"
 )
@@ -44,13 +45,10 @@ import (
 // @in                          header
 // @name                        Authorization
 func main() {
-	blogger.SetOutput(os.Stdout)
-	blogger.SetFormatter(&blogger.TextFormatter{})
-
 	ctx := context.Background()
 	config, err := conf.GetConfig()
 	if err != nil {
-		blogger.Fatal(err.Error())
+		logger.Logger.Fatal(err.Error())
 	}
 
 	if config.Environment == conf.DevelopEnvironment {
@@ -59,15 +57,15 @@ func main() {
 
 	var pgLogger pgx.Logger
 	if config.Environment == conf.DevelopEnvironment {
-		pgLogger = logrusadapter.NewLogger(blogger.New())
+		pgLogger = logrusadapter.NewLogger(&logger.Logger)
 	}
 
 	rwConn, err := pg.NewReadAndWriteConnection(ctx, config.Database, config.Database, pgLogger)
 	if err != nil {
-		blogger.Fatal(err.Error())
+		logger.Logger.Fatal(err.Error())
 	}
 
-	blogger.Infof("database connection established")
+	logger.Logger.Infof("database connection established")
 
 	redis := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port),
@@ -75,7 +73,7 @@ func main() {
 		DB:       config.Redis.DB,
 	})
 
-	blogger.Infof("redis connection established")
+	logger.Logger.Infof("redis connection established")
 
 	cache := redisCache.NewRedisCache(redis, time.Minute*5, time.Minute*5, "cache")
 
@@ -119,18 +117,18 @@ func main() {
 	})
 
 	if err := web.Start(); err != nil {
-		blogger.Fatalf("API Server crashed with error :[%s]", err.Error())
+		logger.Logger.Fatalf("API Server crashed with error :[%s]", err.Error())
 	}
-	blogger.Infof("API server has been started...")
+	logger.Logger.Infof("API server has been started...")
 
 	appCloser := make(chan os.Signal)
 	signal.Notify(appCloser, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-appCloser
-		blogger.Info("[os.SIGNAL] close request")
+		logger.Logger.Info("[os.SIGNAL] close request")
 
 		go web.Stop()
-		blogger.Info("[os.SIGNAL] done")
+		logger.Logger.Info("[os.SIGNAL] done")
 	}()
 	web.WaitForDone()
 }

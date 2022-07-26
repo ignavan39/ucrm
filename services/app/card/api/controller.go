@@ -7,15 +7,15 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi"
 	"ucrm/app/card"
 	repository "ucrm/app/card"
 
+	"github.com/go-chi/chi"
+
+	dashboardSettings "ucrm/app/dashboard-settings"
 	"ucrm/app/models"
 	"ucrm/pkg/httpext"
-
-	blogger "github.com/sirupsen/logrus"
-	dashboardSettings "ucrm/app/dashboard-settings"
+	"ucrm/pkg/logger"
 )
 
 type Controller struct {
@@ -65,7 +65,7 @@ func (c *Controller) CreateOne(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		blogger.Errorf("[card/createOne] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[card/createOne] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[CreateOne]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -75,7 +75,7 @@ func (c *Controller) CreateOne(w http.ResponseWriter, r *http.Request) {
 
 	webhook, err := c.cardWebhookRepo.GetCardWebhookByPipelineId(payload.PipelineId)
 	if err != nil {
-		blogger.Errorf("[card/createOne] CTX: [%v], ERROR:[%s]", err.Error())
+		logger.Logger.Errorf("[card/createOne] CTX: [%v], ERROR:[%s]", err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: "[CreateOne] failed to get webhook",
 			Code:  http.StatusBadRequest,
@@ -124,7 +124,7 @@ func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err = c.repo.Delete(id)
 	if err != nil {
-		blogger.Errorf("[card/delete] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[card/delete] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[Delete]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -134,7 +134,7 @@ func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 
 	webhook, err := c.cardWebhookRepo.GetCardWebhookByPipelineId(res.PipelineId)
 	if err != nil {
-		blogger.Errorf("[card/delete] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[card/delete] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: "[Delete] failed to get webhook",
 			Code:  http.StatusBadRequest,
@@ -196,7 +196,7 @@ func (c *Controller) Update(w http.ResponseWriter, r *http.Request) {
 
 	oldCard, err := c.repo.GetOne(id)
 	if err != nil {
-		blogger.Errorf("[card/update] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[card/update] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[Update]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -214,7 +214,7 @@ func (c *Controller) Update(w http.ResponseWriter, r *http.Request) {
 
 	updatedCard, err := c.repo.Update(id, payload.Name, payload.Fields)
 	if err != nil {
-		blogger.Errorf("[card/update] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[card/update] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[Update]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -232,7 +232,7 @@ func (c *Controller) Update(w http.ResponseWriter, r *http.Request) {
 
 	webhook, err := c.cardWebhookRepo.GetCardWebhookByPipelineId(oldCard.PipelineId)
 	if err != nil {
-		blogger.Errorf("[card/update] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[card/update] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: "[Update] failed to get pipeline",
 			Code:  http.StatusBadRequest,
@@ -274,7 +274,7 @@ func (c *Controller) GetOne(w http.ResponseWriter, r *http.Request) {
 
 	card, err := c.repo.GetOne(id)
 	if err != nil {
-		blogger.Errorf("[card/getOne] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[card/getOne] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[GetOne]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -338,7 +338,7 @@ func (cr *Controller) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	cards, err := cr.repo.GetAllByPipelineId(cardId)
 	if err != nil {
-		blogger.Errorf("[card/updateOrder] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[card/updateOrder] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: err.Error(),
 			Code:  http.StatusInternalServerError,
@@ -409,7 +409,7 @@ func (cr *Controller) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	err = cr.repo.UpdateOrders(cardIdToNewOrder)
 	if err != nil {
-		blogger.Errorf("[card/updateOrder] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[card/updateOrder] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[UpdateOrder]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,

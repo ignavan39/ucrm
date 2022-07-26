@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"ucrm/app/auth"
 	"ucrm/app/dashboard"
 	"ucrm/app/models"
 
-	blogger "github.com/sirupsen/logrus"
+	"github.com/go-chi/chi"
+
 	dashboardSettings "ucrm/app/dashboard-settings"
 	"ucrm/pkg/httpext"
+	"ucrm/pkg/logger"
 )
 
 type Controller struct {
@@ -158,7 +159,7 @@ func (c *Controller) GetOneDashboard(w http.ResponseWriter, r *http.Request) {
 
 	dashboard, err := c.repo.GetOne(id)
 	if err != nil {
-		blogger.Error("[dashboards/getOnde] ERROR :%s", err.Error())
+		logger.Logger.Error("[dashboards/getOnde] ERROR :%s", err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: err.Error(),
 			Code:  http.StatusInternalServerError,
@@ -409,7 +410,7 @@ func (c *Controller) CreateCustomField(w http.ResponseWriter, r *http.Request) {
 
 	field, err := c.repo.AddCustomField(dashboardId, payload.Name, payload.IsNullable, payload.FieldType)
 	if err != nil {
-		blogger.Errorf("[dashboards/createCustomFields] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[dashboards/createCustomFields] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[CreateCustomField]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -444,7 +445,7 @@ func (c *Controller) DeleteCustomField(w http.ResponseWriter, r *http.Request) {
 
 	err := c.repo.DeleteCustomField(fieldId)
 	if err != nil {
-		blogger.Errorf("[dashboards/deleteCustomFields] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[dashboards/deleteCustomFields] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[DeleteCustomField]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -499,7 +500,7 @@ func (c *Controller) RemoveAccess(w http.ResponseWriter, r *http.Request) {
 
 	err := c.repo.RemoveAccess(id, userId)
 	if err != nil {
-		blogger.Errorf("[dashboards/RemoveAccess] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[dashboards/RemoveAccess] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[RemoveAccess]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -554,7 +555,7 @@ func (c *Controller) UpdateAccess(w http.ResponseWriter, r *http.Request) {
 
 	err = c.repo.UpdateAccess(payload.DashboardId, payload.UserId, payload.Access)
 	if err != nil {
-		blogger.Errorf("[dashboards/UpdateAccess] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[dashboards/UpdateAccess] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[UpdateAccess]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,

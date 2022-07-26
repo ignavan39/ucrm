@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"errors"
 
-	sq "github.com/Masterminds/squirrel"
 	"ucrm/app/dashboard/api"
 	"ucrm/app/models"
 
-	blogger "github.com/sirupsen/logrus"
+	sq "github.com/Masterminds/squirrel"
+
 	repository "ucrm/app/contact"
+	"ucrm/pkg/logger"
 	"ucrm/pkg/pg"
 )
 
@@ -40,7 +41,7 @@ func (r *Repository) GetOne(ctx context.Context, contactId string) (*models.Cont
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		blogger.Errorf("[card/GetOneCard] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[card/GetOneCard] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		return nil, err
 	}
 
@@ -54,7 +55,7 @@ func (r *Repository) GetOne(ctx context.Context, contactId string) (*models.Cont
 		if err := rows.Scan(&contact.Id, &contact.DashboardId, &contact.CardId, &contact.Name, &contact.Phone, &contact.City,
 			&name, &id, &contactId, &fieldId, &value,
 		); err != nil {
-			blogger.Errorf("[card/GetOneCard] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+			logger.Logger.Errorf("[card/GetOneCard] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 			return nil, err
 		}
 
@@ -100,7 +101,7 @@ func (r *Repository) Create(ctx context.Context, dashboardId string, cardId *str
 	row := qb.PlaceholderFormat(sq.Dollar).
 		QueryRow()
 	if err := row.Scan(&contact.Id, &contact.DashboardId, &contact.CardId, &contact.Name, &contact.Phone, &contact.City); err != nil {
-		blogger.Errorf("[contact/Delete] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[contact/Delete] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		return nil, err
 	}
 
@@ -189,7 +190,7 @@ func (r *Repository) Update(ctx context.Context, contactId string, name *string,
 			var err error
 			tx, err = r.pool.Write().Begin()
 			if err != nil {
-				blogger.Errorf("[card/update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+				logger.Logger.Errorf("[card/update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 				return err
 			}
 		}
@@ -211,7 +212,7 @@ func (r *Repository) Update(ctx context.Context, contactId string, name *string,
 			if err != nil {
 				if isUpdateWithTransaction {
 					if err := tx.Rollback(); err != nil {
-						blogger.Errorf("[card/update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+						logger.Logger.Errorf("[card/update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 						return err
 					}
 				}
@@ -251,7 +252,7 @@ func (r *Repository) Update(ctx context.Context, contactId string, name *string,
 		if err != nil {
 			if isUpdateWithTransaction {
 				if err := tx.Rollback(); err != nil {
-					blogger.Errorf("[card/update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+					logger.Logger.Errorf("[card/update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 					return err
 				}
 			}
@@ -264,7 +265,7 @@ func (r *Repository) Update(ctx context.Context, contactId string, name *string,
 
 		if isUpdateWithTransaction {
 			if err = tx.Commit(); err != nil {
-				blogger.Errorf("[card/update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+				logger.Logger.Errorf("[card/update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 				return err
 			}
 		}
@@ -281,7 +282,7 @@ func (r *Repository) Rename(ctx context.Context, contactId string, newName strin
 		PlaceholderFormat(sq.Dollar).
 		Exec()
 	if err != nil {
-		blogger.Errorf("[contact/Delete] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[contact/Delete] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		return err
 	}
 
@@ -295,7 +296,7 @@ func (r *Repository) Delete(ctx context.Context, contactId string) error {
 		PlaceholderFormat(sq.Dollar).
 		Exec()
 	if err != nil {
-		blogger.Errorf("[contact/Delete] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[contact/Delete] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		return err
 	}
 

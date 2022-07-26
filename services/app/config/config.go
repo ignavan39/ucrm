@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"time"
 
-	blogger "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	"ucrm/pkg/logger"
 	"ucrm/pkg/pg"
+
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -67,7 +68,7 @@ func validateEnvironment(env string) bool {
 }
 
 func confFromFile(fileName string) (*CoreConfig, error) {
-	blogger.Infoln(fmt.Sprintf("reading from %s", fileName))
+	logger.Logger.Infoln(fmt.Sprintf("reading from %s", fileName))
 
 	file, err := os.Open(fileName)
 	if err != nil {

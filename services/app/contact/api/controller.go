@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-chi/chi"
-	blogger "github.com/sirupsen/logrus"
 	"ucrm/app/card"
 	"ucrm/app/contact"
 	"ucrm/pkg/httpext"
+	"ucrm/pkg/logger"
+
+	"github.com/go-chi/chi"
 )
 
 type Controller struct {
@@ -49,7 +50,7 @@ func (c *Controller) GetOne(w http.ResponseWriter, r *http.Request) {
 
 	contact, err := c.contactRepo.GetOne(ctx, contactId)
 	if err != nil {
-		blogger.Errorf("[contact/GetOne] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[contact/GetOne] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[GetOne]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -95,7 +96,7 @@ func (c *Controller) CreateOne(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		blogger.Errorf("[contact/createOne] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[contact/createOne] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[CreateOne]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -140,7 +141,7 @@ func (c *Controller) Rename(w http.ResponseWriter, r *http.Request) {
 
 	err := c.contactRepo.Rename(ctx, contactId, newName)
 	if err != nil {
-		blogger.Errorf("[contact/Rename] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[contact/Rename] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[Rename]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,
@@ -196,7 +197,7 @@ func (c *Controller) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = c.contactRepo.Update(ctx, contactId, payload.Name, payload.Phone, payload.City, payload.Fields)
 	if err != nil {
-		blogger.Errorf("[contact/Update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[contact/Update] CTX: [%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[Update]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,

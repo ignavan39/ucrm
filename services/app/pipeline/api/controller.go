@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi"
-	blogger "github.com/sirupsen/logrus"
 	"ucrm/app/models"
 	"ucrm/app/pipeline"
 	"ucrm/pkg/httpext"
+	"ucrm/pkg/logger"
+
+	"github.com/go-chi/chi"
 )
 
 type Controller struct {
@@ -48,7 +49,7 @@ func (c *Controller) CreateOne(w http.ResponseWriter, r *http.Request) {
 
 	pipeline, err := c.repo.Create(payload.Name, payload.DashboardId)
 	if err != nil {
-		blogger.Errorf("[pipeline/create] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[pipeline/create] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: err.Error(),
 			Code:  http.StatusInternalServerError,
@@ -98,7 +99,7 @@ func (c *Controller) UpdateName(w http.ResponseWriter, r *http.Request) {
 
 	err = c.repo.UpdateName(id, payload.Name)
 	if err != nil {
-		blogger.Errorf("[pipeline/updateName] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[pipeline/updateName] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: err.Error(),
 			Code:  http.StatusInternalServerError,
@@ -132,7 +133,7 @@ func (c *Controller) DeleteById(w http.ResponseWriter, r *http.Request) {
 
 	err := c.repo.DeleteById(id)
 	if err != nil {
-		blogger.Errorf("[pipeline/delete] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[pipeline/delete] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: err.Error(),
 			Code:  http.StatusInternalServerError,
@@ -186,7 +187,7 @@ func (c *Controller) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	pipelines, err := c.repo.GetAllByPipeline(pipelineId)
 	if err != nil {
-		blogger.Errorf("[pipeline/updateOrder] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[pipeline/updateOrder] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: err.Error(),
 			Code:  http.StatusInternalServerError,
@@ -256,7 +257,7 @@ func (c *Controller) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	err = c.repo.UpdateOrders(pipelineIdToNewOrder)
 	if err != nil {
-		blogger.Errorf("[pipeline/updateOrder] ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[pipeline/updateOrder] ctx: %v, error: %s", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: fmt.Sprintf("[UpdateOrder]:%s", err.Error()),
 			Code:  http.StatusInternalServerError,

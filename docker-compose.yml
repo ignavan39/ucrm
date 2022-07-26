@@ -81,12 +81,24 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-172.4}.4.22
         aliases:
           - ucrm.redis.loc
-
+  smtp: 
+    container_name: ucrm-smtp
+    image: "ghcr.io/ignavan39/go-smtp:latest"
+    ports:
+      - ${PORT:-8082}:80
+    environment:
+      - CONFIG_PATH=./config.example.yml
+    networks:
+      ucrm:
+        ipv4_address: ${NETWORK_PREFIX:-172.4}.4.15
+        aliases:
+          - ucrm.smtp.loc
   app:
     container_name: ucrm-app
     depends_on:
       - postgres
       - redis
+      - smtp
     build:
       context: ./
       dockerfile: docker/app.dockerfile

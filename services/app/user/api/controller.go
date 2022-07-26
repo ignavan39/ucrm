@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	blogger "github.com/sirupsen/logrus"
+	"ucrm/pkg/logger"
 
 	"ucrm/app/auth"
 	"ucrm/app/config"
@@ -90,7 +90,7 @@ func (c *Controller) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	user, err := c.repo.Create(payload.Email, utils.CryptString(payload.Password, c.auth.GetHashSalt()))
 	if err != nil {
-		blogger.Errorf("[user/sign-up] CTX:[%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[user/sign-up] CTX:[%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: "user already exists",
 			Code:  http.StatusBadRequest,
@@ -248,7 +248,7 @@ func (c *Controller) RecoveryPassword(w http.ResponseWriter, r *http.Request) {
 
 	user, err := c.repo.UpdatePassword(payload.Email, utils.CryptString(payload.Password, c.auth.GetHashSalt()))
 	if err != nil {
-		blogger.Errorf("[user/sign-up] CTX:[%v], ERROR:[%s]", ctx, err.Error())
+		logger.Logger.Errorf("[user/sign-up] CTX:[%v], ERROR:[%s]", ctx, err.Error())
 		httpext.JSON(w, httpext.CommonError{
 			Error: "user already exists",
 			Code:  http.StatusBadRequest,
@@ -305,7 +305,7 @@ func (c *Controller) sendMailMessage(
 	if err == nil {
 		lastTime, err := time.Parse(time.RFC3339, lastTimeRaw)
 		if err != nil {
-			blogger.Errorf("[user/sendMailMessage]: ctx: %v, error: %s", ctx, err.Error())
+			logger.Logger.Errorf("[user/sendMailMessage]: ctx: %v, error: %s", ctx, err.Error())
 			return errFailedParseTime
 		}
 		if !time.Now().Add(time.Duration(-5) * time.Minute).After(lastTime) {
@@ -317,7 +317,7 @@ func (c *Controller) sendMailMessage(
 		fmt.Sprintf("%s_%s", retryPeriodPrefix(), email),
 		time.Now().Format(time.RFC3339))
 	if err != nil {
-		blogger.Errorf("[user/sendMailMessage]: ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[user/sendMailMessage]: ctx: %v, error: %s", ctx, err.Error())
 		return errFailedSaveLastTimeToCache
 	}
 
@@ -333,14 +333,14 @@ func (c *Controller) sendMailMessage(
 
 	msg, err := utils.RenderTemplate(template.Template, utils.WrapTemplateData(Data))
 	if err != nil {
-		blogger.Errorf("[user/sendMailMessage]: ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[user/sendMailMessage]: ctx: %v, error: %s", ctx, err.Error())
 		return errFailedRenderTemplateMessage
 	}
 
 	// _, _, err = c.mailer.SendMail(msg, c.mailConfig.Sender, email)
-	blogger.Infof("Template msg: %s", msg)
+	logger.Logger.Infof("Template msg: %s", msg)
 	if err != nil {
-		blogger.Errorf("[user/sendMailMessage]: ctx: %v, error: %s", ctx, err.Error())
+		logger.Logger.Errorf("[user/sendMailMessage]: ctx: %v, error: %s", ctx, err.Error())
 		return errFailedToSendMessage
 	}
 
